@@ -109,20 +109,20 @@ trait HasPeripheryDebugModuleImp extends LazyModuleImp {
     resetctrl
   }
 
-  val debug = outer.debugOpt.map { outerdebug =>
+val debug = outer.debugOpt.map { outerdebug =>
     val debug = IO(new DebugIO)
-
     require(!(debug.clockeddmi.isDefined && debug.systemjtag.isDefined),
       "You cannot have both DMI and JTAG interface in HasPeripheryDebugModuleImp")
-
     require(!(debug.clockeddmi.isDefined && debug.apb.isDefined),
       "You cannot have both DMI and APB interface in HasPeripheryDebugModuleImp")
-
     require(!(debug.systemjtag.isDefined && debug.apb.isDefined),
       "You cannot have both APB and JTAG interface in HasPeripheryDebugModuleImp")
-
-    debug.clockeddmi.foreach { dbg => outerdebug.module.io.dmi.get <> dbg }
-
+    debug
+}
+debug.foreach { debug =>
+    debug.clockeddmi.foreach { 
+    val outerdebug = outer.debugOpt.get
+    dbg => outerdebug.module.io.dmi.get <> dbg }
     (debug.apb
       zip outer.apbDebugNodeOpt
       zip outerdebug.module.io.apb_clock
@@ -132,19 +132,14 @@ trait HasPeripheryDebugModuleImp extends LazyModuleImp {
         c:= io.clock
         r:= io.reset
     }
-
     outerdebug.module.io.debug_reset := debug.reset
     outerdebug.module.io.debug_clock := debug.clock
-
     debug.ndreset := outerdebug.module.io.ctrl.ndreset
     debug.dmactive := outerdebug.module.io.ctrl.dmactive
     outerdebug.module.io.ctrl.dmactiveAck := debug.dmactiveAck
     debug.extTrigger.foreach { x => outerdebug.module.io.extTrigger.foreach {y => x <> y}}
-
     // TODO in inheriting traits: Set this to something meaningful, e.g. "component is in reset or powered down"
     outerdebug.module.io.ctrl.debugUnavail.foreach { _ := false.B }
-
-    debug
   }
 
   val dtm = debug.flatMap(_.systemjtag.map(instantiateJtagDTM(_)))
