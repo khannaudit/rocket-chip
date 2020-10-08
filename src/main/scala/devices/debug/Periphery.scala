@@ -111,7 +111,7 @@ trait HasPeripheryDebugModuleImp extends LazyModuleImp {
 
   val debug = outer.debugOpt.map { outerdebug =>
     val debug = IO(new DebugIO)
-  
+
     require(!(debug.clockeddmi.isDefined && debug.systemjtag.isDefined),
       "You cannot have both DMI and JTAG interface in HasPeripheryDebugModuleImp")
 
