@@ -121,25 +121,24 @@ val debug = outer.debugOpt.map { outerdebug =>
 }
 debug.foreach { debug =>
     debug.clockeddmi.foreach { 
-    val outerdebug = outer.debugOpt.get
-    dbg => outerdebug.module.io.dmi.get <> dbg }
+    dbg => outer.debugOpt.get.module.io.dmi.get <> dbg }
     (debug.apb
       zip outer.apbDebugNodeOpt
-      zip outerdebug.module.io.apb_clock
-      zip outerdebug.module.io.apb_reset).foreach {
+      zip outer.debugOpt.get.module.io.apb_clock
+      zip outer.debugOpt.get.module.io.apb_reset).foreach {
       case (((io, apb), c ), r) =>
         apb.out(0)._1 <> io
         c:= io.clock
         r:= io.reset
     }
-    outerdebug.module.io.debug_reset := debug.reset
-    outerdebug.module.io.debug_clock := debug.clock
-    debug.ndreset := outerdebug.module.io.ctrl.ndreset
-    debug.dmactive := outerdebug.module.io.ctrl.dmactive
-    outerdebug.module.io.ctrl.dmactiveAck := debug.dmactiveAck
-    debug.extTrigger.foreach { x => outerdebug.module.io.extTrigger.foreach {y => x <> y}}
+    outer.debugOpt.get.module.io.debug_reset := debug.reset
+    outer.debugOpt.get.module.io.debug_clock := debug.clock
+    debug.ndreset := outer.debugOpt.get.module.io.ctrl.ndreset
+    debug.dmactive := outer.debugOpt.get.module.io.ctrl.dmactive
+    outer.debugOpt.get.module.io.ctrl.dmactiveAck := debug.dmactiveAck
+    debug.extTrigger.foreach { x => outer.debugOpt.get.module.io.extTrigger.foreach {y => x <> y}}
     // TODO in inheriting traits: Set this to something meaningful, e.g. "component is in reset or powered down"
-    outerdebug.module.io.ctrl.debugUnavail.foreach { _ := false.B }
+    outer.debugOpt.get.module.io.ctrl.debugUnavail.foreach { _ := false.B }
   }
 
   val dtm = debug.flatMap(_.systemjtag.map(instantiateJtagDTM(_)))
