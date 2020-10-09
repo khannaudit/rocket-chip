@@ -124,6 +124,7 @@ trait HasPeripheryDebugModuleImp extends LazyModuleImp {
     debug
   }
 
+  // Workaround for https://github.com/freechipsproject/chisel3/issues/1603
   debug.foreach { debug =>
     debug.clockeddmi.foreach { 
     dbg => outer.debugOpt.get.module.io.dmi.get <> dbg }
